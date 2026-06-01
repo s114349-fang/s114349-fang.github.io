@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
 <meta charset="UTF-8">
 <title>心理測驗</title>
 
 <style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
 body{
     background:#e9e9e9;
     font-family:"Microsoft JhengHei";
@@ -21,6 +29,20 @@ body{
     align-items:center;
 }
 
+.progress{
+    width:150px;
+    height:12px;
+    margin-bottom:50px;
+    align-self:flex-end;
+}
+
+.progress-fill{
+    width:20%;
+    height:100%;
+    background:black;
+    border-radius:20px;
+}
+
 .question-box{
     width:430px;
     height:100px;
@@ -29,7 +51,8 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    font-size:40px;
+    text-align:center;
+    font-size:32px;
     margin-bottom:40px;
 }
 
@@ -48,28 +71,177 @@ body{
     font-size:18px;
     cursor:pointer;
 }
+
+.option:hover{
+    background:#f5f5f5;
+}
+
+.result{
+    background:white;
+    padding:40px;
+    border-radius:25px;
+    text-align:center;
+}
+
 </style>
 
 </head>
+
 <body>
 
 <div class="container">
 
-    <div class="question-box">
+    <div class="progress">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="question-box" id="question">
         題目
     </div>
 
     <div class="options">
-        <button class="option">選項1</button>
-        <button class="option">選項2</button>
-        <button class="option">選項3</button>
-        <button class="option">選項4</button>
+
+        <button class="option" onclick="selectAnswer(0)">
+            選項1
+        </button>
+
+        <button class="option" onclick="selectAnswer(1)">
+            選項2
+        </button>
+
+        <button class="option" onclick="selectAnswer(2)">
+            選項3
+        </button>
+
+        <button class="option" onclick="selectAnswer(3)">
+            選項4
+        </button>
+
     </div>
 
 </div>
 
 <script>
-console.log("心理測驗開始");
+
+const questions = [
+
+{
+    question:"放假時最喜歡？",
+    options:["追劇","出門","打遊戲","睡覺"]
+},
+
+{
+    question:"最喜歡哪種天氣？",
+    options:["晴天","雨天","陰天","下雪"]
+},
+
+{
+    question:"朋友約你出去時？",
+    options:["立刻答應","考慮一下","看心情","拒絕"]
+},
+
+{
+    question:"你比較喜歡？",
+    options:["冒險","計畫","創作","休息"]
+},
+
+{
+    question:"最想去哪旅行？",
+    options:["日本","韓國","歐洲","美國"]
+}
+
+];
+
+let currentQuestion = 0;
+
+let scores = [0,0,0,0];
+
+const questionBox =
+document.getElementById("question");
+
+const optionButtons =
+document.querySelectorAll(".option");
+
+const progressFill =
+document.getElementById("progressFill");
+
+function loadQuestion(){
+
+    questionBox.textContent =
+    questions[currentQuestion].question;
+
+    optionButtons.forEach((button,index)=>{
+
+        button.textContent =
+        questions[currentQuestion].options[index];
+
+    });
+
+    progressFill.style.width =
+    ((currentQuestion + 1) / questions.length * 100) + "%";
+}
+
+function selectAnswer(choice){
+
+    scores[choice]++;
+
+    currentQuestion++;
+
+    if(currentQuestion < questions.length){
+
+        loadQuestion();
+
+    }
+    else{
+
+        showResult();
+
+    }
+
+}
+
+function showResult(){
+
+    const maxScore =
+    Math.max(...scores);
+
+    const resultIndex =
+    scores.indexOf(maxScore);
+
+    const resultNames = [
+
+        "貓咪型人格",
+
+        "狗狗型人格",
+
+        "狐狸型人格",
+
+        "熊熊型人格"
+
+    ];
+
+    document.querySelector(".container").innerHTML = `
+
+        <div class="result">
+
+            <h1>測驗完成！</h1>
+
+            <br>
+
+            <h2>你的結果是：</h2>
+
+            <br>
+
+            <h1>${resultNames[resultIndex]}</h1>
+
+        </div>
+
+    `;
+
+}
+
+loadQuestion();
+
 </script>
 
 </body>

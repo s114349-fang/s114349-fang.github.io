@@ -1,57 +1,76 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
-    <meta charset="UTF-8">
-    <title>心理測驗</title>
+<meta charset="UTF-8">
+<title>心理測驗</title>
 
-    <link rel="stylesheet" href="style.css">
+<style>
+body{
+    background:#e9e9e9;
+    font-family:"Microsoft JhengHei";
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    width:700px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.question-box{
+    width:430px;
+    height:100px;
+    background:white;
+    border-radius:25px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:40px;
+    margin-bottom:40px;
+}
+
+.options{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.option{
+    width:250px;
+    height:65px;
+    border:none;
+    border-radius:25px;
+    background:white;
+    font-size:18px;
+    cursor:pointer;
+}
+</style>
+
 </head>
-
 <body>
 
-    <div class="card">
+<div class="container">
 
-        <h1>心理測驗</h1>
-
-        <p class="progress-text">
-            第 1 題 / 5 題
-        </p>
-
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
-        </div>
-
-        <h2 class="question">
-            你放假的時候最喜歡？
-        </h2>
-
-        <div class="options">
-
-            <button class="option">
-                在家追劇
-            </button>
-
-            <button class="option">
-                和朋友出門
-            </button>
-
-            <button class="option">
-                打遊戲
-            </button>
-
-            <button class="option">
-                睡覺
-            </button>
-
-        </div>
-
-        <button class="next-btn">
-            下一題
-        </button>
-
+    <div class="question-box">
+        題目
     </div>
 
-</body>
+    <div class="options">
+        <button class="option">選項1</button>
+        <button class="option">選項2</button>
+        <button class="option">選項3</button>
+        <button class="option">選項4</button>
+    </div>
 
+</div>
+
+<script>
+console.log("心理測驗開始");
+</script>
+
+</body>
 </html>

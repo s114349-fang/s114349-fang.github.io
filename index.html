@@ -2,291 +2,462 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>心理測驗</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>俄羅斯方塊</title>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    background:#e9e9e9;
-    font-family:"Microsoft JhengHei", sans-serif;
+    margin:0;
+    background:#111;
+    color:white;
+    font-family:Arial,sans-serif;
+
     display:flex;
     justify-content:center;
     align-items:center;
+
     height:100vh;
 }
 
-.container{
-    width:700px;
+.game-container{
     display:flex;
-    flex-direction:column;
-    align-items:center;
+    gap:20px;
+    align-items:flex-start;
 }
 
-.progress{
-    width:150px;
-    height:12px;
-    margin-bottom:50px;
-    align-self:flex-end;
-}
-
-.progress-fill{
-    width:20%;
-    height:100%;
+canvas{
     background:black;
-    border-radius:20px;
+    border:4px solid white;
 }
 
-.question-box{
-    width:430px;
-    min-height:100px;
-
-    background:white;
-
-    border-radius:25px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    text-align:center;
-
-    font-size:32px;
-
-    padding:20px;
-
-    margin-bottom:40px;
-}
-
-.options{
+.info{
     display:flex;
     flex-direction:column;
     gap:20px;
 }
 
-.option{
-    width:250px;
-    height:65px;
-
-    border:none;
-
-    border-radius:25px;
-
-    background:white;
-
-    font-size:18px;
-
+button{
+    padding:10px;
+    font-size:16px;
     cursor:pointer;
-}
-
-.option:hover{
-    background:#f5f5f5;
-}
-
-.result{
-    background:white;
-    padding:40px;
-    border-radius:25px;
-    text-align:center;
-}
-
-.restart-btn{
-    width:200px;
-    height:60px;
-
     border:none;
-
-    border-radius:25px;
-
-    background:black;
-
+    background:#00bfff;
     color:white;
-
-    font-size:18px;
-
-    cursor:pointer;
+    border-radius:8px;
 }
 
-.restart-btn:hover{
-    opacity:0.8;
+button:hover{
+    background:#009acd;
 }
 
+.controls{
+    line-height:1.8;
+}
 </style>
-
 </head>
 
 <body>
 
-<div class="container">
+<div class="game-container">
 
-    <div class="progress">
-        <div class="progress-fill" id="progressFill"></div>
+    <div>
+        <h1>俄羅斯方塊</h1>
+        <canvas id="tetris" width="300" height="600"></canvas>
     </div>
 
-    <div class="question-box" id="question">
-        題目
-    </div>
+    <div class="info">
+        <h2>分數：<span id="score">0</span></h2>
 
-    <div class="options">
-
-        <button class="option" onclick="selectAnswer(0)">
-            選項1
+        <button id="restartBtn">
+            重新開始
         </button>
 
-        <button class="option" onclick="selectAnswer(1)">
-            選項2
-        </button>
-
-        <button class="option" onclick="selectAnswer(2)">
-            選項3
-        </button>
-
-        <button class="option" onclick="selectAnswer(3)">
-            選項4
-        </button>
-
+        <div class="controls">
+            <p>操作方式：</p>
+            <p>⬅ ➡ 移動</p>
+            <p>⬇ 加速下降</p>
+            <p>⬆ 旋轉</p>
+        </div>
     </div>
 
 </div>
 
 <script>
+const canvas = document.getElementById("tetris");
+const context = canvas.getContext("2d");
 
-const questions = [
+const scoreElement = document.getElementById("score");
+const restartBtn = document.getElementById("restartBtn");
 
-{
-    question:"走在路上，看到對面有一個可能認識的人但不確定是不是，你會？",
-    options:["大喊他的名字然後大幅度用力揮手","無視，然後掏出隨身攜帶的被子隨地大小睡","和朋友說:你好~","原地召喚飛碟然後飛起來逃跑"]
-},
+context.scale(30,30);
 
-{
-    question:"聽說明天是世界末日，你今天要做什麼?",
-    options:["去跟你的好朋朋坦白你是同，而且喜歡他很久了","都最後一天了，當然要把握時間睡覺阿","和太陽開心的說:再見~","前往宇宙調查世界末日的原因並阻止"]
-},
+const arena = createMatrix(10,20);
 
-{
-    question:"朋友約你出去時？",
-    options:["可是我想在家打遊戲欸不要","不行我要睡覺。","蛤~~~~~~~~~","說我要去阻止世界末日，沒辦法跟你出去玩"]
-},
-
-{
-    question:"你覺得你是？",
-    options:["我不是人!","可以冬眠的動物","蛤~~~~~~~~~~","我乃神明大人，區區賤民還不跪下!"]
-},
-
-{
-    question:"今天好無聊，要幹嘛?？",
-    options:["到處騷擾朋友直到被罵有病然後很爽的離開","睡覺阿廢話，老子昨天敖通宵ㄟ","出去玩~出去玩~出去玩~出去玩~","和外星人討論艱深的哲學問題"]
-}
-
+const colors = [
+    null,
+    "#FF0D72",
+    "#0DC2FF",
+    "#0DFF72",
+    "#F538FF",
+    "#FF8E0D",
+    "#FFE138",
+    "#3877FF"
 ];
 
-let currentQuestion = 0;
+const player = {
+    pos:{x:0,y:0},
+    matrix:null,
+    score:0
+};
 
-let scores = [0,0,0,0];
+function createMatrix(w,h){
+    const matrix=[];
 
-const questionBox =
-document.getElementById("question");
+    while(h--){
+        matrix.push(new Array(w).fill(0));
+    }
 
-const optionButtons =
-document.querySelectorAll(".option");
+    return matrix;
+}
 
-const progressFill =
-document.getElementById("progressFill");
+function createPiece(type){
 
-function loadQuestion(){
+    if(type==="T"){
+        return [
+            [0,0,0],
+            [1,1,1],
+            [0,1,0]
+        ];
+    }
 
-    questionBox.textContent =
-    questions[currentQuestion].question;
+    else if(type==="O"){
+        return [
+            [2,2],
+            [2,2]
+        ];
+    }
 
-    optionButtons.forEach((button,index)=>{
+    else if(type==="L"){
+        return [
+            [0,3,0],
+            [0,3,0],
+            [0,3,3]
+        ];
+    }
 
-        button.textContent =
-        questions[currentQuestion].options[index];
+    else if(type==="J"){
+        return [
+            [0,4,0],
+            [0,4,0],
+            [4,4,0]
+        ];
+    }
+
+    else if(type==="I"){
+        return [
+            [0,5,0,0],
+            [0,5,0,0],
+            [0,5,0,0],
+            [0,5,0,0]
+        ];
+    }
+
+    else if(type==="S"){
+        return [
+            [0,6,6],
+            [6,6,0],
+            [0,0,0]
+        ];
+    }
+
+    else if(type==="Z"){
+        return [
+            [7,7,0],
+            [0,7,7],
+            [0,0,0]
+        ];
+    }
+}
+
+function drawMatrix(matrix,offset){
+
+    matrix.forEach((row,y)=>{
+
+        row.forEach((value,x)=>{
+
+            if(value!==0){
+
+                context.fillStyle=colors[value];
+
+                context.fillRect(
+                    x+offset.x,
+                    y+offset.y,
+                    1,
+                    1
+                );
+            }
+
+        });
 
     });
 
-    progressFill.style.width =
-    ((currentQuestion + 1) / questions.length * 100) + "%";
 }
 
-function selectAnswer(choice){
+function draw(){
 
-    scores[choice]++;
+    context.fillStyle="#000";
 
-    currentQuestion++;
+    context.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-    if(currentQuestion < questions.length){
+    drawMatrix(arena,{x:0,y:0});
+    drawMatrix(player.matrix,player.pos);
+}
 
-        loadQuestion();
+function merge(arena,player){
 
-    }else{
+    player.matrix.forEach((row,y)=>{
 
-        showResult();
+        row.forEach((value,x)=>{
+
+            if(value!==0){
+
+                arena[y+player.pos.y][x+player.pos.x]=value;
+
+            }
+
+        });
+
+    });
+
+}
+
+function collide(arena,player){
+
+    const [m,o]=[
+        player.matrix,
+        player.pos
+    ];
+
+    for(let y=0;y<m.length;y++){
+
+        for(let x=0;x<m[y].length;x++){
+
+            if(
+                m[y][x]!==0 &&
+                (
+                    arena[y+o.y] &&
+                    arena[y+o.y][x+o.x]
+                )!==0
+            ){
+                return true;
+            }
+
+        }
+
+    }
+
+    return false;
+}
+
+function playerDrop(){
+
+    player.pos.y++;
+
+    if(collide(arena,player)){
+
+        player.pos.y--;
+
+        merge(arena,player);
+
+        playerReset();
+
+        arenaSweep();
+    }
+
+    dropCounter=0;
+}
+
+function playerMove(dir){
+
+    player.pos.x+=dir;
+
+    if(collide(arena,player)){
+        player.pos.x-=dir;
+    }
+
+}
+
+function rotate(matrix){
+
+    for(let y=0;y<matrix.length;y++){
+
+        for(let x=0;x<y;x++){
+
+            [
+                matrix[x][y],
+                matrix[y][x]
+            ]=[
+                matrix[y][x],
+                matrix[x][y]
+            ];
+
+        }
+
+    }
+
+    matrix.forEach(row=>row.reverse());
+
+}
+
+function playerRotate(){
+
+    rotate(player.matrix);
+
+    if(collide(arena,player)){
+
+        rotate(player.matrix);
+        rotate(player.matrix);
+        rotate(player.matrix);
 
     }
 
 }
 
-function showResult(){
+function arenaSweep(){
 
-    const resultNames = [
+    outer:
+    for(let y=arena.length-1;y>0;--y){
 
-        "怪怪的人",
+        for(let x=0;x<arena[y].length;++x){
 
-        "很睏的人",
+            if(arena[y][x]===0){
+                continue outer;
+            }
 
-        "天線寶寶",
+        }
 
-        "你不是人"
+        const row=arena.splice(y,1)[0].fill(0);
 
-    ];
+        arena.unshift(row);
 
-    const resultIndex =
-    scores.indexOf(Math.max(...scores));
+        ++y;
 
-    document.querySelector(".container").innerHTML = `
+        player.score+=10;
 
-        <div class="result">
+    }
 
-            <h1>測驗完成！</h1>
-
-            <br>
-
-            <h2>我覺得最適合你的形容是：</h2>
-
-            <br>
-
-            <h1>${resultNames[resultIndex]}</h1>
-
-            <br><br>
-
-            <button
-                class="restart-btn"
-                onclick="restartQuiz()">
-
-                重新測驗
-
-            </button>
-
-        </div>
-
-    `;
+    updateScore();
 
 }
 
-function restartQuiz(){
+function playerReset(){
 
-    location.reload();
+    const pieces="ILJOTSZ";
+
+    player.matrix=createPiece(
+        pieces[
+            Math.floor(
+                Math.random()*pieces.length
+            )
+        ]
+    );
+
+    player.pos.y=0;
+
+    player.pos.x=
+        (
+            arena[0].length/2|0
+        )-
+        (
+            player.matrix[0].length/2|0
+        );
+
+    if(collide(arena,player)){
+
+        arena.forEach(
+            row=>row.fill(0)
+        );
+
+        player.score=0;
+
+        updateScore();
+
+    }
 
 }
 
-loadQuestion();
+function updateScore(){
+    scoreElement.innerText=player.score;
+}
 
+document.addEventListener("keydown",event=>{
+
+    if(event.key==="ArrowLeft"){
+        playerMove(-1);
+    }
+
+    else if(event.key==="ArrowRight"){
+        playerMove(1);
+    }
+
+    else if(event.key==="ArrowDown"){
+        playerDrop();
+    }
+
+    else if(event.key==="ArrowUp"){
+        playerRotate();
+    }
+
+});
+
+restartBtn.addEventListener("click",()=>{
+
+    arena.forEach(
+        row=>row.fill(0)
+    );
+
+    player.score=0;
+
+    updateScore();
+
+    playerReset();
+
+});
+
+let dropCounter=0;
+
+let dropInterval=1000;
+
+let lastTime=0;
+
+function update(time=0){
+
+    const deltaTime=time-lastTime;
+
+    lastTime=time;
+
+    dropCounter+=deltaTime;
+
+    if(dropCounter>dropInterval){
+        playerDrop();
+    }
+
+    draw();
+
+    requestAnimationFrame(update);
+
+}
+
+playerReset();
+
+updateScore();
+
+update();
 </script>
 
 </body>

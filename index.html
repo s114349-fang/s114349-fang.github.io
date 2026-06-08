@@ -35,6 +35,7 @@ body::before{
     from{
         transform:translateY(0px);
     }
+
     to{
         transform:translateY(-20px);
     }
@@ -413,6 +414,8 @@ let noClearPieces = 0;
 
 let isGameOver = false;
 
+let animationId;
+
 function createMatrix(w,h){
 
     const matrix=[];
@@ -581,6 +584,11 @@ function collide(arena,player){
 
 function playerDrop(){
 
+    if(isGameOver){
+
+        return;
+    }
+
     player.pos.y++;
 
     if(collide(arena,player)){
@@ -598,6 +606,11 @@ function playerDrop(){
 }
 
 function playerMove(dir){
+
+    if(isGameOver){
+
+        return;
+    }
 
     player.pos.x += dir;
 
@@ -630,6 +643,11 @@ function rotate(matrix){
 
 function playerRotate(){
 
+    if(isGameOver){
+
+        return;
+    }
+
     rotate(player.matrix);
 
     if(collide(arena,player)){
@@ -641,6 +659,11 @@ function playerRotate(){
 }
 
 function showTaunt(){
+
+    if(isGameOver){
+
+        return;
+    }
 
     const text =
         taunts[
@@ -814,6 +837,8 @@ function showGameOver(){
 
     isGameOver = true;
 
+    cancelAnimationFrame(animationId);
+
     finalScore.innerText =
         player.score;
 
@@ -851,6 +876,13 @@ function restartGame(){
 
     gameOverScreen.style.display =
         "none";
+
+    lastTime = 0;
+
+    dropCounter = 0;
+
+    animationId =
+        requestAnimationFrame(update);
 }
 
 document.addEventListener(
@@ -911,6 +943,11 @@ let lastTime=0;
 
 function update(time=0){
 
+    if(isGameOver){
+
+        return;
+    }
+
     const deltaTime =
         time-lastTime;
 
@@ -925,14 +962,16 @@ function update(time=0){
 
     draw();
 
-    requestAnimationFrame(update);
+    animationId =
+        requestAnimationFrame(update);
 }
 
 playerReset();
 
 updateScore();
 
-update();
+animationId =
+    requestAnimationFrame(update);
 
 </script>
 

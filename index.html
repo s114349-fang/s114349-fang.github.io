@@ -165,6 +165,42 @@ button:hover{
 
 }
 
+/* 嘲諷通知 */
+
+#taunt{
+
+    position:fixed;
+
+    right:-400px;
+
+    top:40px;
+
+    background:#fff;
+
+    color:#ff8fb1;
+
+    padding:20px 30px;
+
+    border-radius:20px;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.1);
+
+    transition:0.5s;
+
+    z-index:9999;
+}
+
+#taunt.show{
+
+    right:30px;
+
+}
+
 </style>
 </head>
 
@@ -228,6 +264,10 @@ button:hover{
 
 </div>
 
+<!-- 嘲諷通知 -->
+
+<div id="taunt"></div>
+
 <script>
 
 const canvas =
@@ -244,6 +284,9 @@ const scoreElement =
 const restartBtn =
     document.getElementById("restartBtn");
 
+const tauntElement =
+    document.getElementById("taunt");
+
 context.scale(30,30);
 
 const arena = createMatrix(10,20);
@@ -257,6 +300,30 @@ const colors = [
     "#ffe8d6",
     "#fff7c7",
     "#d6ddff"
+];
+
+const taunts = [
+
+    "好菜～",
+
+    "再練十年吧",
+
+    "你是不是在亂放",
+
+    "這都能斷？",
+
+    "我阿嬤都比你強",
+
+    "別送頭啦",
+
+    "專心一點啦",
+
+    "你快輸了耶",
+
+    "這操作有點慘",
+
+    "方塊都在哭了"
+
 ];
 
 const player = {
@@ -525,6 +592,31 @@ function playerRotate(){
 
 }
 
+function showTaunt(){
+
+    const randomText = taunts[
+        Math.floor(
+            Math.random()*taunts.length
+        )
+    ];
+
+    tauntElement.innerText =
+        randomText;
+
+    tauntElement.classList.add(
+        "show"
+    );
+
+    setTimeout(()=>{
+
+        tauntElement.classList.remove(
+            "show"
+        );
+
+    },2000);
+
+}
+
 function arenaSweep(){
 
     let clearedRows = 0;
@@ -563,11 +655,17 @@ function arenaSweep(){
 
     if(clearedRows > 0){
 
-        canvasElement.classList.add("flash");
+        noClearTimer = 0;
+
+        canvasElement.classList.add(
+            "flash"
+        );
 
         setTimeout(()=>{
 
-            canvasElement.classList.remove("flash");
+            canvasElement.classList.remove(
+                "flash"
+            );
 
         },250);
 
@@ -577,6 +675,12 @@ function arenaSweep(){
             player.combo * 10;
 
     }else{
+
+        if(player.combo >= 2){
+
+            showTaunt();
+
+        }
 
         player.combo = 0;
 
@@ -729,6 +833,8 @@ function restartGame(){
 
     player.combo=0;
 
+    noClearTimer=0;
+
     updateScore();
 
     playerReset();
@@ -742,6 +848,22 @@ restartGameOverBtn.addEventListener(
     "click",
     restartGame
 );
+
+let noClearTimer = 0;
+
+setInterval(()=>{
+
+    noClearTimer++;
+
+    if(noClearTimer >= 12){
+
+        showTaunt();
+
+        noClearTimer = 0;
+
+    }
+
+},1000);
 
 playerReset();
 

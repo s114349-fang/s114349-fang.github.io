@@ -118,7 +118,7 @@ button:hover{
 
     text-align:center;
 
-    width:300px;
+    width:320px;
 
     box-shadow:
         0 0 40px rgba(255,192,203,0.4);
@@ -136,6 +136,18 @@ button:hover{
     font-size:20px;
 
     margin-bottom:20px;
+}
+
+#gameOverTaunt{
+
+    color:#ff8fb1;
+
+    font-size:18px;
+
+    margin-top:10px;
+
+    line-height:1.6;
+
 }
 
 /* 消行特效 */
@@ -171,7 +183,7 @@ button:hover{
 
     position:fixed;
 
-    right:-400px;
+    right:-500px;
 
     top:40px;
 
@@ -256,6 +268,8 @@ button:hover{
             <span id="finalScore">0</span>
         </p>
 
+        <p id="gameOverTaunt"></p>
+
         <button id="restartGameOverBtn">
             重新開始
         </button>
@@ -304,25 +318,69 @@ const colors = [
 
 const taunts = [
 
-    "好菜～",
+    "好菜喔 :D",
 
-    "再練十年吧",
+    "這操作我看不懂欸（笑）",
 
-    "你是不是在亂放",
+    "你是不是閉著眼在玩",
 
-    "這都能斷？",
+    "我阿嬤都比你強 OuO",
 
-    "我阿嬤都比你強",
+    "再練十年吧少年",
 
-    "別送頭啦",
+    "方塊看到你都想逃",
 
-    "專心一點啦",
+    "這都能斷連擊？？",
 
-    "你快輸了耶",
+    "你在堆垃圾山嗎",
 
-    "這操作有點慘",
+    "你是不是把腦袋忘在家",
 
-    "方塊都在哭了"
+    "好險方塊不會說話",
+
+    "你的鍵盤快哭了",
+
+    "專心點啦 XD",
+
+    "這手速像阿公泡茶",
+
+    "你是不是在送分",
+
+    "我已經替方塊感到痛苦",
+
+    "求你別再亂放了",
+
+    "這畫面有點慘不忍睹",
+
+    "方塊：我到底做錯了什麼",
+
+    "再這樣玩電腦都要同情你了",
+
+    "你是不是第一次玩 :P"
+
+];
+
+const gameOverTaunts = [
+
+    "結束啦～下去練吧 :D",
+
+    "這分數你也敢秀出來？",
+
+    "我家的貓都玩得比你好",
+
+    "恭喜你成功餵飽垃圾堆",
+
+    "這場打得真有『特色』",
+
+    "辛苦了，下次加油（笑）",
+
+    "你和高手之間差了銀河系",
+
+    "方塊們終於解脫了",
+
+    "看得我血壓有點高",
+
+    "你真的很努力…在輸"
 
 ];
 
@@ -332,6 +390,8 @@ const player = {
     score:0,
     combo:0
 };
+
+let noClearPieces = 0;
 
 function createMatrix(w,h){
 
@@ -655,7 +715,7 @@ function arenaSweep(){
 
     if(clearedRows > 0){
 
-        noClearTimer = 0;
+        noClearPieces = 0;
 
         canvasElement.classList.add(
             "flash"
@@ -676,6 +736,8 @@ function arenaSweep(){
 
     }else{
 
+        noClearPieces++;
+
         if(player.combo >= 2){
 
             showTaunt();
@@ -683,6 +745,14 @@ function arenaSweep(){
         }
 
         player.combo = 0;
+
+        if(noClearPieces >= 5){
+
+            showTaunt();
+
+            noClearPieces = 0;
+
+        }
 
     }
 
@@ -808,6 +878,11 @@ const finalScore =
         "finalScore"
     );
 
+const gameOverTaunt =
+    document.getElementById(
+        "gameOverTaunt"
+    );
+
 const restartGameOverBtn =
     document.getElementById(
         "restartGameOverBtn"
@@ -817,6 +892,17 @@ function showGameOver(){
 
     finalScore.innerText =
         player.score;
+
+    const randomTaunt =
+        gameOverTaunts[
+            Math.floor(
+                Math.random() *
+                gameOverTaunts.length
+            )
+        ];
+
+    gameOverTaunt.innerText =
+        randomTaunt;
 
     gameOverScreen.style.display =
         "flex";
@@ -833,7 +919,7 @@ function restartGame(){
 
     player.combo=0;
 
-    noClearTimer=0;
+    noClearPieces=0;
 
     updateScore();
 
@@ -848,22 +934,6 @@ restartGameOverBtn.addEventListener(
     "click",
     restartGame
 );
-
-let noClearTimer = 0;
-
-setInterval(()=>{
-
-    noClearTimer++;
-
-    if(noClearTimer >= 12){
-
-        showTaunt();
-
-        noClearTimer = 0;
-
-    }
-
-},1000);
 
 playerReset();
 

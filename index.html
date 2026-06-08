@@ -12,193 +12,128 @@
 body{
     margin:0;
     background:#fffaf5;
-
     font-family:Arial,sans-serif;
-
     display:flex;
     justify-content:center;
     align-items:center;
-
     height:100vh;
-
     overflow:hidden;
 }
 
-/* 背景動畫 */
-
 body::before{
-
     content:"";
-
     position:fixed;
-
     inset:0;
-
     background:
         radial-gradient(circle at 20% 20%, rgba(255,192,203,0.25), transparent 25%),
         radial-gradient(circle at 80% 30%, rgba(173,216,230,0.25), transparent 25%),
         radial-gradient(circle at 50% 80%, rgba(255,228,181,0.2), transparent 25%);
-
     animation:bgMove 10s infinite alternate;
 }
 
 @keyframes bgMove{
-
     from{
         transform:translateY(0px);
     }
-
     to{
         transform:translateY(-20px);
     }
-
 }
 
 .game-container{
-
     display:flex;
-
     gap:30px;
-
     align-items:flex-start;
-
     position:relative;
-
     z-index:1;
 }
 
 .info{
-
     display:flex;
-
     flex-direction:column;
-
     gap:20px;
-
     background:#fff;
-
     padding:20px;
-
     border-radius:20px;
-
     box-shadow:
         0 5px 20px rgba(0,0,0,0.08);
-
     width:220px;
 }
 
 h1,h2,p{
-
     color:#444;
-
     margin:0;
 }
 
 canvas{
-
     background:black;
-
     border:6px solid #ffd6e7;
-
     border-radius:20px;
-
     box-shadow:
         0 0 30px rgba(255,182,193,0.4);
-
     transition:0.12s;
 }
 
 button{
-
     padding:12px;
-
     border:none;
-
     border-radius:14px;
-
     cursor:pointer;
-
     background:#ffd6e7;
-
     color:#444;
-
     font-size:16px;
-
     transition:0.2s;
 }
 
 button:hover{
-
     transform:scale(1.05);
-
     background:#ffe5ef;
 }
 
 .controls{
-
     line-height:1.8;
 }
 
 /* GAME OVER */
 
 #gameOverScreen{
-
     position:fixed;
-
     inset:0;
-
     background:rgba(0,0,0,0.75);
-
     display:none;
-
     justify-content:center;
-
     align-items:center;
-
     z-index:9999;
 }
 
 .game-over-box{
-
     background:#fffafc;
-
     padding:40px;
-
     border-radius:24px;
-
     text-align:center;
-
     width:340px;
-
     box-shadow:
         0 0 40px rgba(255,192,203,0.4);
 }
 
 .game-over-box h1{
-
     color:#ff8fb1;
-
     margin-bottom:20px;
 }
 
 #gameOverTaunt{
-
     color:#ff8fb1;
-
     margin:20px 0;
-
     line-height:1.7;
 }
 
 /* 消行特效 */
 
 .flash{
-
     animation:flash 0.25s;
 }
 
 @keyframes flash{
-
     0%{
         opacity:1;
         transform:scale(1);
@@ -213,35 +148,24 @@ button:hover{
         opacity:1;
         transform:scale(1);
     }
-
 }
 
 /* COMBO */
 
 #comboText{
-
     position:absolute;
-
     left:50%;
-
     top:50%;
-
     transform:translate(-50%,-50%);
-
     font-size:50px;
-
     color:#fff;
-
     opacity:0;
-
     pointer-events:none;
-
     text-shadow:
         0 0 20px rgba(255,255,255,0.8);
 }
 
 .combo-show{
-
     animation:comboAnim 0.7s;
 }
 
@@ -261,64 +185,41 @@ button:hover{
         opacity:0;
         transform:translate(-50%,-60px) scale(1);
     }
-
 }
 
 /* 嘲諷通知 */
 
 #tauntContainer{
-
     position:absolute;
-
     left:100%;
-
     top:0;
-
     margin-left:25px;
-
     width:340px;
-
     display:flex;
-
     flex-direction:column;
-
     gap:12px;
 }
 
 .taunt-message{
-
     background:#fff;
-
     color:#ff8fb1;
-
     padding:18px;
-
     border-radius:18px;
-
     box-shadow:
         0 5px 20px rgba(0,0,0,0.1);
-
     line-height:1.7;
-
     font-size:15px;
-
     transform:translateX(50px);
-
     opacity:0;
-
     animation:tauntIn 0.4s forwards;
 }
 
 @keyframes tauntIn{
 
     to{
-
         transform:translateX(0);
-
         opacity:1;
-
     }
-
 }
 
 </style>
@@ -509,6 +410,8 @@ const player = {
 };
 
 let noClearPieces = 0;
+
+let isGameOver = false;
 
 function createMatrix(w,h){
 
@@ -904,6 +807,13 @@ function updateScore(){
 
 function showGameOver(){
 
+    if(isGameOver){
+
+        return;
+    }
+
+    isGameOver = true;
+
     finalScore.innerText =
         player.score;
 
@@ -930,6 +840,10 @@ function restartGame(){
     player.combo=0;
 
     noClearPieces=0;
+
+    isGameOver = false;
+
+    tauntContainer.innerHTML = "";
 
     updateScore();
 

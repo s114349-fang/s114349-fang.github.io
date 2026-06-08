@@ -43,6 +43,8 @@ canvas{
 
     box-shadow:
         0 0 30px rgba(255,182,193,0.4);
+
+    transition:0.2s;
 }
 
 .info{
@@ -136,6 +138,33 @@ button:hover{
     margin-bottom:20px;
 }
 
+/* 消行特效 */
+
+.flash{
+
+    animation:flash 0.25s;
+
+}
+
+@keyframes flash{
+
+    0%{
+        opacity:1;
+        transform:scale(1);
+    }
+
+    50%{
+        opacity:0.2;
+        transform:scale(1.02);
+    }
+
+    100%{
+        opacity:1;
+        transform:scale(1);
+    }
+
+}
+
 </style>
 </head>
 
@@ -207,6 +236,8 @@ const canvas =
 const context =
     canvas.getContext("2d");
 
+const canvasElement = canvas;
+
 const scoreElement =
     document.getElementById("score");
 
@@ -231,7 +262,8 @@ const colors = [
 const player = {
     pos:{x:0,y:0},
     matrix:null,
-    score:0
+    score:0,
+    combo:0
 };
 
 function createMatrix(w,h){
@@ -495,6 +527,8 @@ function playerRotate(){
 
 function arenaSweep(){
 
+    let clearedRows = 0;
+
     outer:
     for(
         let y=arena.length-1;
@@ -523,7 +557,28 @@ function arenaSweep(){
 
         ++y;
 
-        player.score += 10;
+        clearedRows++;
+
+    }
+
+    if(clearedRows > 0){
+
+        canvasElement.classList.add("flash");
+
+        setTimeout(()=>{
+
+            canvasElement.classList.remove("flash");
+
+        },250);
+
+        player.combo++;
+
+        player.score +=
+            player.combo * 10;
+
+    }else{
+
+        player.combo = 0;
 
     }
 
@@ -671,6 +726,8 @@ function restartGame(){
     );
 
     player.score=0;
+
+    player.combo=0;
 
     updateScore();
 

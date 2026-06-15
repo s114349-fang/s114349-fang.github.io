@@ -71,7 +71,7 @@ body::before{
     width:220px;
 }
 
-h1,h2,p{
+h1,h2,h3,p{
     color:#444;
     margin:0;
 }
@@ -82,7 +82,12 @@ canvas{
     border-radius:20px;
     box-shadow:
         0 0 30px rgba(255,182,193,0.4);
-    transition:0.12s;
+}
+
+#next{
+    width:120px;
+    height:120px;
+    align-self:center;
 }
 
 button{
@@ -105,8 +110,6 @@ button:hover{
     line-height:1.8;
 }
 
-/* GAME OVER */
-
 #gameOverScreen{
     position:fixed;
     inset:0;
@@ -123,13 +126,10 @@ button:hover{
     border-radius:24px;
     text-align:center;
     width:340px;
-    box-shadow:
-        0 0 40px rgba(255,192,203,0.4);
 }
 
 .game-over-box h1{
     color:#ff8fb1;
-    margin-bottom:20px;
 }
 
 #gameOverTaunt{
@@ -138,8 +138,6 @@ button:hover{
     line-height:1.7;
 }
 
-/* 消行特效 */
-
 .flash{
     animation:flash 0.25s;
 }
@@ -147,7 +145,6 @@ button:hover{
 @keyframes flash{
     0%{
         opacity:1;
-        transform:scale(1);
     }
 
     50%{
@@ -157,11 +154,8 @@ button:hover{
 
     100%{
         opacity:1;
-        transform:scale(1);
     }
 }
-
-/* COMBO */
 
 #comboText{
     position:absolute;
@@ -172,8 +166,6 @@ button:hover{
     color:#fff;
     opacity:0;
     pointer-events:none;
-    text-shadow:
-        0 0 20px rgba(255,255,255,0.8);
 }
 
 .combo-show{
@@ -197,8 +189,6 @@ button:hover{
         transform:translate(-50%,-60px) scale(1);
     }
 }
-
-/* 嘲諷通知 */
 
 #tauntContainer{
     position:absolute;
@@ -240,8 +230,6 @@ button:hover{
 
 <div class="game-container">
 
-    <!-- 左邊資訊 -->
-
     <div class="info">
 
         <h2>
@@ -253,6 +241,12 @@ button:hover{
             Combo：
             <span id="combo">0</span>
         </h2>
+
+        <h3>Next</h3>
+
+        <canvas id="next"
+            width="120"
+            height="120"></canvas>
 
         <button id="restartBtn">
             重新開始
@@ -268,8 +262,6 @@ button:hover{
 
     </div>
 
-    <!-- 遊戲 -->
-
     <div style="position:relative;">
 
         <h1>嘲諷版俄羅斯方塊</h1>
@@ -282,13 +274,9 @@ button:hover{
 
     </div>
 
-    <!-- 嘲諷通知 -->
-
     <div id="tauntContainer"></div>
 
 </div>
-
-<!-- GAME OVER -->
 
 <div id="gameOverScreen">
 
@@ -320,6 +308,14 @@ const context =
     canvas.getContext("2d");
 
 context.scale(30,30);
+
+const nextCanvas =
+    document.getElementById("next");
+
+const nextContext =
+    nextCanvas.getContext("2d");
+
+nextContext.scale(30,30);
 
 const scoreElement =
     document.getElementById("score");
@@ -356,7 +352,6 @@ const colors = [
     "#ffe8d6",
     "#fff7c7",
     "#d6ddff"
-
 ];
 
 const taunts = [
@@ -379,18 +374,7 @@ const taunts = [
 
     "你玩得很自由，完全不受邏輯限制。",
 
-    "這局最大的敵人不是方塊，是你自己。",
-
-    "方塊們正在討論集體辭職。",
-
-    "你這版面連貞子都爬不上來。",
-
-    "你的每一步都像在挑戰人類理解極限。",
-
-    "你現在的操作像是在跟地心引力吵架。",
-
-    "你成功把每個能放好的位置都放成最差答案。"
-
+    "這局最大的敵人不是方塊，是你自己。"
 ];
 
 const gameOverTaunts = [
@@ -401,12 +385,7 @@ const gameOverTaunts = [
 
     "這局看得我血壓有點高。",
 
-    "方塊終於解脫了。",
-
-    "恭喜你成功餵飽垃圾堆。",
-
-    "再玩下去連方塊都要憂鬱症了。"
-
+    "方塊終於解脫了。"
 ];
 
 const player = {
@@ -419,6 +398,8 @@ const player = {
 
     combo:0
 };
+
+let nextPiece = null;
 
 let noClearPieces = 0;
 
@@ -506,7 +487,22 @@ function createPiece(type){
     }
 }
 
-function drawMatrix(matrix,offset){
+function randomPiece(){
+
+    const pieces =
+        "ILJOTSZ";
+
+    return createPiece(
+        pieces[
+            Math.floor(
+                Math.random() *
+                pieces.length
+            )
+        ]
+    );
+}
+
+function drawMatrix(matrix,offset,ctx){
 
     matrix.forEach((row,y)=>{
 
@@ -514,10 +510,10 @@ function drawMatrix(matrix,offset){
 
             if(value!==0){
 
-                context.fillStyle =
+                ctx.fillStyle =
                     colors[value];
 
-                context.fillRect(
+                ctx.fillRect(
                     x+offset.x,
                     y+offset.y,
                     1,
@@ -539,11 +535,34 @@ function draw(){
         canvas.height
     );
 
-    drawMatrix(arena,{x:0,y:0});
+    drawMatrix(
+        arena,
+        {x:0,y:0},
+        context
+    );
 
     drawMatrix(
         player.matrix,
-        player.pos
+        player.pos,
+        context
+    );
+}
+
+function drawNext(){
+
+    nextContext.fillStyle="#000";
+
+    nextContext.fillRect(
+        0,
+        0,
+        nextCanvas.width,
+        nextCanvas.height
+    );
+
+    drawMatrix(
+        nextPiece,
+        {x:0.5,y:0.5},
+        nextContext
     );
 }
 
@@ -675,14 +694,6 @@ function showTaunt(){
         return;
     }
 
-    const text =
-        taunts[
-            Math.floor(
-                Math.random() *
-                taunts.length
-            )
-        ];
-
     const div =
         document.createElement("div");
 
@@ -690,12 +701,18 @@ function showTaunt(){
         "taunt-message"
     );
 
-    div.innerText = text;
+    div.innerText =
+        taunts[
+            Math.floor(
+                Math.random() *
+                taunts.length
+            )
+        ];
 
     tauntContainer.appendChild(div);
 
     while(
-        tauntContainer.children.length > 3
+        tauntContainer.children.length > 5
     ){
 
         tauntContainer.removeChild(
@@ -771,8 +788,15 @@ function arenaSweep(){
 
         player.combo++;
 
-        player.score +=
-            player.combo * 10;
+        if(player.combo === 1){
+
+            player.score += 10;
+
+        }else{
+
+            player.score +=
+                (player.combo - 1) * 100;
+        }
 
         showCombo();
 
@@ -800,18 +824,16 @@ function arenaSweep(){
 
 function playerReset(){
 
-    const pieces =
-        "ILJOTSZ";
+    if(nextPiece === null){
 
-    player.matrix =
-        createPiece(
-            pieces[
-                Math.floor(
-                    Math.random() *
-                    pieces.length
-                )
-            ]
-        );
+        nextPiece = randomPiece();
+    }
+
+    player.matrix = nextPiece;
+
+    nextPiece = randomPiece();
+
+    drawNext();
 
     player.pos.y = 0;
 
@@ -876,9 +898,11 @@ function restartGame(){
 
     noClearPieces=0;
 
-    isGameOver = false;
+    isGameOver=false;
 
-    tauntContainer.innerHTML = "";
+    tauntContainer.innerHTML="";
+
+    nextPiece = null;
 
     updateScore();
 
@@ -887,9 +911,9 @@ function restartGame(){
     gameOverScreen.style.display =
         "none";
 
-    lastTime = 0;
+    lastTime=0;
 
-    dropCounter = 0;
+    dropCounter=0;
 
     animationId =
         requestAnimationFrame(update);

@@ -667,14 +667,58 @@ function draw(){
         context
     );
 
+    drawGhost();
+
     drawMatrix(
         player.matrix,
         player.pos,
         context
     );
 }
+function drawGhost(){
 
-function drawNext(){
+    const ghost = {
+
+        pos:{
+            x:player.pos.x,
+            y:player.pos.y
+        },
+
+        matrix:player.matrix
+    };
+
+    while(
+        !collide(arena,ghost)
+    ){
+
+        ghost.pos.y++;
+    }
+
+    ghost.pos.y--;
+
+    ghost.matrix.forEach((row,y)=>{
+
+        row.forEach((value,x)=>{
+
+            if(value!==0){
+
+                context.globalAlpha = 0.25;
+
+                context.fillStyle =
+                    "#ffffff";
+
+                context.fillRect(
+                    x + ghost.pos.x,
+                    y + ghost.pos.y,
+                    1,
+                    1
+                );
+
+                context.globalAlpha = 1;
+            }
+        });
+    });
+}
 
     nextContext.fillStyle="#000";
 
@@ -685,13 +729,21 @@ function drawNext(){
         nextCanvas.height
     );
 
+    const offsetX =
+        (4 - nextPiece[0].length) / 2;
+
+    const offsetY =
+        (4 - nextPiece.length) / 2;
+
     drawMatrix(
         nextPiece,
-        {x:0.5,y:0.5},
+        {
+            x:offsetX,
+            y:offsetY
+        },
         nextContext
     );
 }
-
 function merge(arena,player){
 
     player.matrix.forEach((row,y)=>{
